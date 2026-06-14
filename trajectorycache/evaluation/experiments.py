@@ -19,6 +19,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from scipy import stats
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from trajectorycache.config import ProjectConfig, default_highway_config, default_urban_config
 from trajectorycache.simulation.sim_loop import SimulationMetrics, TrajectorySimulation
@@ -218,7 +219,7 @@ def run_density_sweep(
         List of RunResult for all combinations.
     """
     all_results: List[RunResult] = []
-
+    tasks = []
     for n_veh in densities:
         for policy in policies:
             for seed in seeds:
@@ -231,16 +232,22 @@ def run_density_sweep(
                 if fast_mode:
                     cfg.sim.duration_s = 150.0
                     cfg.sim.warmup_s = 30.0
+                tasks.append((policy, cfg, seed))
 
-                logger.info("Running: policy=%s scenario=%s n=%d seed=%d",
-                            policy, scenario, n_veh, seed)
-                try:
-                    result = run_policy(policy, cfg, seed)
-                    all_results.append(result)
-                except Exception as e:
-                    logger.error("Run failed: %s", e)
+    logger.info("Starting %d density sweep runs in parallel...", len(tasks))
+    with ProcessPoolExecutor() as executor:
+        futures = {executor.submit(run_policy, p, c, s): (p, c, s) for p, c, s in tasks}
+        for future in as_completed(futures):
+            p, c, s = futures[future]
+            try:
+                res = future.result()
+                all_results.append(res)
+                logger.info("Finished: policy=%s n=%d seed=%d", p, c.sim.num_vehicles, s)
+            except Exception as e:
+                logger.error("Run failed for policy=%s n=%d seed=%d: %s", p, c.sim.num_vehicles, s, e)
 
     return all_results
+
 
 
 def run_lambda_sweep(
@@ -251,6 +258,7 @@ def run_lambda_sweep(
 ) -> List[RunResult]:
     """λ sensitivity sweep (Fig. 7)."""
     results = []
+    tasks = []
     for lam in lambda_values:
         for seed in seeds:
             cfg = default_highway_config()
@@ -260,9 +268,21 @@ def run_lambda_sweep(
                 cfg.sim.duration_s = 150.0
                 cfg.sim.warmup_s = 30.0
             policy_name = f"tc_lambda_{lam:.2f}"
-            r = run_policy("tc", cfg, seed)
-            r.policy = policy_name
-            results.append(r)
+            tasks.append((policy_name, cfg, seed))
+            
+    logger.info("Starting %d lambda sweep runs in parallel...", len(tasks))
+    with ProcessPoolExecutor() as executor:
+        # Note: pass "tc" as policy logic but rename result policy
+        futures = {executor.submit(run_policy, "tc", c, s): p_name for p_name, c, s in tasks}
+        for future in as_completed(futures):
+            p_name = futures[future]
+            try:
+                r = future.result()
+                r.policy = p_name
+                results.append(r)
+            except Exception as e:
+                logger.error("Lambda run failed: %s", e)
+
     return results
 
 
@@ -274,6 +294,7 @@ def run_gps_noise_sweep(
 ) -> List[RunResult]:
     """GPS noise degradation sweep (Fig. 8)."""
     results = []
+    tasks = []
     for sigma in sigma_values:
         for seed in seeds:
             cfg = default_highway_config()
@@ -283,9 +304,20 @@ def run_gps_noise_sweep(
                 cfg.sim.duration_s = 150.0
                 cfg.sim.warmup_s = 30.0
             policy_name = f"tc_gps_{sigma:.1f}"
-            r = run_policy("tc", cfg, seed)
-            r.policy = policy_name
-            results.append(r)
+            tasks.append((policy_name, cfg, seed))
+            
+    logger.info("Starting %d GPS sweep runs in parallel...", len(tasks))
+    with ProcessPoolExecutor() as executor:
+        futures = {executor.submit(run_policy, "tc", c, s): p_name for p_name, c, s in tasks}
+        for future in as_completed(futures):
+            p_name = futures[future]
+            try:
+                r = future.result()
+                r.policy = p_name
+                results.append(r)
+            except Exception as e:
+                logger.error("GPS run failed: %s", e)
+
     return results
 
 
@@ -297,6 +329,7 @@ def run_ablation_study(
     """Ablation study (Fig. 6): TC-Full, TC-NoPred, TC-NoGRZ, TC-NoAff, TC-EqW, LRU."""
     policies = ["tc", "tc_nopred", "tc_noaff", "tc_eqw", "lru"]
     results = []
+    tasks = []
     for policy in policies:
         for seed in seeds:
             cfg = default_highway_config()
@@ -304,8 +337,17 @@ def run_ablation_study(
             if fast_mode:
                 cfg.sim.duration_s = 150.0
                 cfg.sim.warmup_s = 30.0
-            r = run_policy(policy, cfg, seed)
-            results.append(r)
+            tasks.append((policy, cfg, seed))
+            
+    logger.info("Starting %d ablation study runs in parallel...", len(tasks))
+    with ProcessPoolExecutor() as executor:
+        futures = [executor.submit(run_policy, p, c, s) for p, c, s in tasks]
+        for future in as_completed(futures):
+            try:
+                results.append(future.result())
+            except Exception as e:
+                logger.error("Ablation run failed: %s", e)
+
     return results
 
 
