@@ -7,10 +7,7 @@
 [![CI](https://github.com/trajectorycache/trajectorycache/actions/workflows/ci.yml/badge.svg)](https://github.com/trajectorycache/trajectorycache/actions)
 [![arXiv](https://img.shields.io/badge/Paper-IEEE%20TVT%202025-red)](https://ieeexplore.ieee.org)
 
-> *Al-Rashidi, Mansour, Siddiqui, Al-Zahrawi. "TrajectoryCache: Mobility-Aware Content Caching for Named Data Networking in Vehicle-to-Everything (V2X) Environments." IEEE Transactions on Vehicular Technology, 2025.*  
-> *Funded by SDAIA-KAUST-2023-04 and KFUPM RI-2023-EE-11.*
-
----
+> TrajectoryCache: Mobility-Aware Content Caching for Named Data Networking in Vehicle-to-Everything (V2X) Environments.
 
 ## Overview
 
