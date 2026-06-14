@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# MyPy
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Experiment outputs (large — tracked separately)
+experiments/results/*.json
+docs/figures/*.png
+docs/figures/*.pdf
+
+# SUMO/NS-3 simulation outputs
+scenarios/*/output/
+scenarios/*/traces/*.xml
+scenarios/*/traces/*.csv
+
+# C++ build artifacts
+src/build/
+CMakeCache.txt
+CMakeFiles/
+*.o
+*.so
+*.a
+
+# Logs
+*.log
+logs/
+
+# Secrets
+.env
+*.key
+*.pem
+
+# Model checkpoints (if any ML extensions added)
+checkpoints/
+
+# Temporary
+tmp/
+temp/

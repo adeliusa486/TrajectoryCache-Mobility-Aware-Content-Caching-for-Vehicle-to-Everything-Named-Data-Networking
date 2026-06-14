@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: trajectorycache-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+    volumes:
+      - ./experiments:/app/experiments
+      - ./docs/figures:/app/docs/figures
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  smoke-test:
+    build: .
+    container_name: trajectorycache-smoke
+    command: python scripts/smoke_test.py
+    volumes:
+      - ./experiments:/app/experiments
+    depends_on:
+      - api
+    profiles:
+      - test
+
+  eval:
+    build: .
+    container_name: trajectorycache-eval
+    command: python scripts/run_evaluation.py --scenario highway --fast
+    volumes:
+      - ./experiments:/app/experiments
+      - ./docs/figures:/app/docs/figures
+    profiles:
+      - eval
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: trajectorycache-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: trajectorycache-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/grafana_dashboards:/etc/grafana/provisioning/dashboards
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus

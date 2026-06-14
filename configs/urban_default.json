@@ -1,0 +1,32 @@
+{
+  "trajectoryCache": {
+    "lambda": 0.75,
+    "alpha": 0.5,
+    "eta_hw": 0.90,
+    "eta_lw": 0.70,
+    "r_grz": 300.0,
+    "epsilon_turn": 1e-4,
+    "affinity_window_s": 300,
+    "eviction_cycle_s": 1.0,
+    "bsm_rate_hz": 10,
+    "delta_tau": 0.5
+  },
+  "rsu": {
+    "coverage_radius_m": 300,
+    "cs_capacity_mb": 500,
+    "backhaul_bandwidth_gbps": 1.0,
+    "wireless_rate_mbps": 54.0,
+    "position_x": 500.0,
+    "position_y": 500.0
+  },
+  "simulation": {
+    "scenario_name": "urban",
+    "duration_s": 600,
+    "warmup_s": 120,
+    "num_vehicles": 300,
+    "random_seed": 42,
+    "catalog_size": 12500,
+    "zipf_alpha": 0.8,
+    "gps_noise_sigma": 0.0
+  }
+}
