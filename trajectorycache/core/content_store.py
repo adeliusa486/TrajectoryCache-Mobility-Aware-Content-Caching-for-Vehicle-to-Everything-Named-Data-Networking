@@ -206,7 +206,7 @@ class ContentStore:
             return {}
         if n == 1:
             return {names[0]: 0.5}
-        return {name: i / (n - 1) for i, name in enumerate(names)}
+        return {name: 1.0 - (i / (n - 1)) for i, name in enumerate(names)}
 
     def chunk_names(self) -> List[str]:
         return list(self._store.keys())

@@ -44,7 +44,7 @@ jobs:
         run: pytest tests/unit/ -v --tb=short
 
       - name: Run integration tests
-        run: pytest tests/integration/ -v --tb=short -k "not test_tc_vs_lru"
+        run: pytest tests/integration/ -v --tb=short
         timeout-minutes: 10
 
       - name: Run smoke test

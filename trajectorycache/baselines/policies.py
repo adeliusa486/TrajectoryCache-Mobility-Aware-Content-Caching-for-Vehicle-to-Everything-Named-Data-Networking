@@ -177,6 +177,7 @@ class ProbCacheEvictionEngine:
         eta_hw: float = 0.90,
         eta_lw: float = 0.70,
         max_hops: int = DEFAULT_MAX_HOPS,
+        rng: Optional[random.Random] = None,
     ) -> None:
         self.cs = content_store
         self.eta_hw = eta_hw
@@ -185,12 +186,12 @@ class ProbCacheEvictionEngine:
         self._cache_prob: Dict[str, float] = {}
         self.cycle_count = 0
         self.total_evicted = 0
+        self._rng = rng if rng is not None else random.Random()
 
     def should_cache(self, n_hops: int = 1) -> bool:
         """Return True with probability 1/n_hops."""
-        import random
         prob = 1.0 / max(1, n_hops)
-        return random.random() < prob
+        return self._rng.random() < prob
 
     def run_cycle(self, vehicle_states=None, current_time: float = 0.0) -> EvictionCycleResult:
         result = EvictionCycleResult(triggered=False)
@@ -229,8 +230,7 @@ class ProbCacheEvictionEngine:
         if self.cs.above_high_watermark(self.eta_hw):
             result = self.run_cycle(vehicle_states, current_time)
         # Assign a random cache probability (proxy for hop count)
-        import random
-        hops = random.randint(1, self.max_hops)
+        hops = self._rng.randint(1, self.max_hops)
         self._cache_prob[chunk.name] = 1.0 / hops
         self.cs.insert(chunk)
         return result

@@ -129,6 +129,7 @@ class MrsScorer:
         affinity: AffinityEstimator,
         r_grz: float = 300.0,
         alpha: float = 0.5,
+        no_prediction: bool = False,
     ) -> None:
         """
         Args:
@@ -136,11 +137,13 @@ class MrsScorer:
             affinity: Affinity estimator φ(v, c).
             r_grz: Geographic Relevance Zone radius (meters).
             alpha: Arrival urgency decay coefficient (s⁻¹), Eq. 6.
+            no_prediction: If True, disables trajectory prediction.
         """
         self.predictor = predictor
         self.affinity = affinity
         self.r_grz = r_grz
         self.alpha = alpha
+        self.no_prediction = no_prediction
 
         self._spatial_index = SpatialIndex()
         self._indexed_chunks: Dict[str, ContentChunk] = {}
@@ -205,6 +208,9 @@ class MrsScorer:
             horizon = dwell_times.get(vid, 0.0)
             if horizon <= 0:
                 continue
+
+            if self.no_prediction:
+                horizon = 0.0
 
             # Arrival urgency weight w_v = 1 / (1 + α·T_arrive)
             w_v = 1.0 / (1.0 + self.alpha * max(0.0, state.t_arrive))

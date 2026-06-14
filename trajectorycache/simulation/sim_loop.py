@@ -287,6 +287,7 @@ class TrajectorySimulation:
             rsu_y=rsu.position_y,
             coverage_radius=rsu.coverage_radius_m,
             gps_noise_sigma=sim.gps_noise_sigma,
+            rng=self.np_rng,
         )
         self.mobility = ScenarioMobility(config, self.rng)
 

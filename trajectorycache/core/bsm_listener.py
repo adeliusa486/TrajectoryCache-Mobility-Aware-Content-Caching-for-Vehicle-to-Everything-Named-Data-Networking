@@ -128,11 +128,13 @@ class BsmListener:
         coverage_radius: float = 300.0,
         stale_timeout_s: float = 0.2,
         gps_noise_sigma: float = 0.0,
+        rng: Optional[np.random.Generator] = None,
     ) -> None:
         self.rsu_x = rsu_x
         self.rsu_y = rsu_y
         self.coverage_radius = coverage_radius
         self.gps_noise_sigma = gps_noise_sigma
+        self._rng = rng if rng is not None else np.random.default_rng()
 
         self.neighbor_table = NeighborTable(
             stale_timeout_s=stale_timeout_s,
@@ -176,8 +178,8 @@ class BsmListener:
 
         # Apply GPS noise
         if self.gps_noise_sigma > 0.0:
-            x += np.random.normal(0.0, self.gps_noise_sigma)
-            y += np.random.normal(0.0, self.gps_noise_sigma)
+            x += self._rng.normal(0.0, self.gps_noise_sigma)
+            y += self._rng.normal(0.0, self.gps_noise_sigma)
 
         # Estimate turn rate from previous heading
         prev_state = self.neighbor_table.get(vehicle_id)

@@ -78,17 +78,19 @@ def run_policy(
     elif policy_name == "lfu":
         sim.engine = LfuEvictionEngine(sim.cs, config.tc.eta_hw, config.tc.eta_lw)
     elif policy_name == "probcache":
-        sim.engine = ProbCacheEvictionEngine(sim.cs, config.tc.eta_hw, config.tc.eta_lw)
+        sim.engine = ProbCacheEvictionEngine(sim.cs, config.tc.eta_hw, config.tc.eta_lw, rng=sim.rng)
     elif policy_name == "wave":
         sim.engine = WaveEvictionEngine(sim.cs, config.tc.eta_hw, config.tc.eta_lw)
     elif policy_name == "tc":
         pass  # Default TrajectoryCache
     elif policy_name == "tc_nopred":
         # Ablation: disable trajectory prediction (use current position only)
-        sim.predictor = CTRVPredictor(epsilon_turn=1e4)  # Force CV always
+        sim.engine.scorer.no_prediction = True
     elif policy_name == "tc_noaff":
         # Ablation: disable affinity (φ = 1 always)
         sim.affinity = AffinityEstimator(catalog_mean_prior=1.0)
+        sim.engine.affinity = sim.affinity
+        sim.engine.scorer.affinity = sim.affinity
     elif policy_name == "tc_eqw":
         # Ablation: equal weighting (λ = 0.5)
         config.tc.lambda_weight = 0.5
